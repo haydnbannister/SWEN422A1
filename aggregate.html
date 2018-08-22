@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar chart for Tweet Data</title>
+    <link rel="stylesheet" href="">
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body>
+<div id="infovizDiv"></div>
+
+
+</svg>
+
+<script>
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 20, bottom: 150, left: 40},
+        width = 800 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+    // Step 1: Load Data
+    d3.csv("data/combined.csv",function(data) {dataViz(data)});
+
+    function dataViz(incomingData) {
+
+        // // Step 2: Format Data
+        // var nestedScore = d3.nest()
+        //     .key(function(d) {return d["Home Team"]})
+        //     .rollup(function(v) { return d3.sum(v, function(d) { return d.Score1; }); })
+        //     .entries(incomingData);
+
+
+        var nestedScore = d3.nest().key(function(d){
+            return d["Home Team"]; })
+            .rollup(function(v) { return d3.mean(v, function(d) { return d.Score1; });
+            }).entries(incomingData)
+
+
+
+        // Step 3: Measure and scale
+        nestedScore.forEach(function(d) {
+            d.numGames = d.values; // add a new property to each object
+        });
+
+
+
+        var x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1);
+        var y = d3.scaleLinear()
+            .range([height, 0]);
+
+        // Scale the range of the data in the domains
+        x.domain(nestedScore.map(function(d) { return d.key; }));
+
+        y.domain([0, d3.max(nestedScore, function (d) {
+            return d.value;
+        })]);
+
+
+        svg.selectAll(".bar")
+            .data(nestedScore)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function (d, i) {
+                return x(d.key);
+            })
+            .attr("width", x.bandwidth())
+            .attr("y", function (d) {
+                return y(d.value);
+            })
+            .attr("height", function (d) {
+                return height - y(d.value);
+            })
+            .attr("fill", function(d) {
+                return "rgb(60, 60, " +(60+(d.value*3)) + ")";
+            });
+
+
+
+        // add the x Axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("font-size", "15px")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-45)" );
+
+        // add the y Axis
+        svg.append("g")
+            .call(d3.axisLeft(y));
+    }
+
+
+</script>
+</body>
+</html>

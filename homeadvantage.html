@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar chart for Tweet Data</title>
+    <link rel="stylesheet" href="">
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body>
+<div id="infovizDiv"></div>
+
+
+</svg>
+
+<script>
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 20, bottom: 150, left: 40},
+        width = 800 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+    // Step 1: Load Data
+    d3.csv("data/combined.csv", function (data) {
+        dataViz(data)
+    });
+
+    function dataViz(incomingData) {
+
+        var homeWins = d3.nest()
+            .key(function (d) {
+                return d["Home Team"];
+            })
+            .rollup(function (v) {
+                return {
+                    total: v.length,
+                    wins: d3.sum(v, function (d) {
+                        if (d.Score1 > d.Score2) {
+                            return 1;
+                        }
+                    })
+                };
+            })
+            .entries(incomingData);
+
+        var awayWins = d3.nest()
+            .key(function (d) {
+                return d["Away Team"];
+            })
+            .rollup(function (v) {
+                return {
+                    total: v.length,
+                    wins: d3.sum(v, function (d) {
+                        if (d.Score1 > d.Score2) {
+                            return 1;
+                        }
+                    })
+                };
+            })
+            .entries(incomingData);
+
+
+        homeWins.forEach(function (d) {
+            console.log(d);
+        });
+        awayWins.forEach(function (d) {
+            console.log(d);
+        });
+
+        var x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1);
+        var y = d3.scaleLinear()
+            .range([height, 0]);
+
+        // Scale the range of the data in the domains
+        x.domain(homeWins.map(function (d) {
+            return d.key;
+        }));
+
+        //find max value between the two
+        y.domain([0, Math.max(
+            d3.max(
+                homeWins, function (d) {
+                    return d.value.wins / d.value.total;
+                }),
+            d3.max(
+                awayWins, function (d) {
+                    return d.value.wins / d.value.total;
+                }))]);
+
+
+        svg.selectAll(".bar")
+            .data(homeWins)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function (d, i) {
+                return x(d.key)+x.bandwidth() / 4;
+            })
+            .attr("width", x.bandwidth() / 4)
+            .attr("y", function (d) {
+
+                return y(d.value.wins / d.value.total);
+
+            })
+            .attr("height", function (d) {
+
+
+                return height - y(d.value.wins / d.value.total);
+
+
+            })
+            .attr("fill", function (d) {
+                return "steelblue";
+            });
+
+        svg.selectAll(".bar2")
+            .data(awayWins)
+            .enter().append("rect")
+            .attr("class", "bar2")
+            .attr("x", function (d, i) {
+                return x(d.key) + x.bandwidth() / 2;
+            })
+            .attr("width", x.bandwidth() / 4)
+            .attr("y", function (d) {
+
+                return y(d.value.wins / d.value.total);
+
+            })
+            .attr("height", function (d) {
+
+
+                return height - y(d.value.wins / d.value.total);
+
+
+            })
+            .attr("fill", function (d) {
+                return "blue";
+            });
+
+
+        // add the x Axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("font-size", "15px")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-45)");
+
+        // add the y Axis
+        svg.append("g")
+            .call(d3.axisLeft(y));
+    }
+
+
+</script>
+</body>
+</html>
