@@ -70,7 +70,7 @@
 <body>
 
 
-<h1 class="heading">
+<h1 class="heading" id="currentYear">
     Home Court Advantage
 </h1>
 
@@ -95,9 +95,6 @@
         2013
     </button>
 
-    <p class="year" id="currentYear">
-        Current: 2008
-    </p>
 </div>
 
 
@@ -177,7 +174,7 @@
         // default view is 2008
         var category = "2008";
         // set current
-        document.getElementById('currentYear').innerHTML = "Current: "+category;
+        document.getElementById('currentYear').innerHTML = category+" Home Court Advantage";
         // filter for year and remove byes
         var filteredData = data.filter(function (d) {
             return (d.Year == category && d.Score1 != 0);
@@ -326,7 +323,7 @@
     function dataUpdate(category) {
 
         // set current year text
-        document.getElementById('currentYear').innerHTML = "Current: "+category;
+        document.getElementById('currentYear').innerHTML = category+" Home Court Advantage";
 
         // filter for year and remove byes
         var filteredData = data.filter(function (d) {
