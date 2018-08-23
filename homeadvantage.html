@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar chart for Tweet Data</title>
+    <title>Home Advantage Visualization</title>
     <link rel="stylesheet" href="">
     <script src="http://d3js.org/d3.v4.min.js"></script>
 
@@ -27,11 +27,40 @@
         display: inline-block;
         font-size: 20px;
         margin-top: 10px;
+
     }
 
     .control-group {
         margin-left: 80px;
     }
+
+        .year{
+            vertical-align: middle;
+            margin-left: 18px;
+            font-family: Helvetica;
+            font-weight: bold;
+            font-size: 30px;
+            display:inline;
+        }
+
+
+        .label{
+
+        font-family: Helvetica;
+        font-size: 24px;
+            font-weight: bold;
+
+
+        }
+
+        .heading{
+            margin-left: 80px;
+            font-family: Helvetica;
+            font-size: 50px;
+            font-weight: normal;
+            color: gray;
+
+        }
 
     </style>
 
@@ -39,7 +68,11 @@
 </head>
 
 <body>
-<div id="infovizDiv"></div>
+
+
+<h1 class="heading">
+    Home Court Advantage
+</h1>
 
 
 <div class="control-group">
@@ -61,15 +94,21 @@
     <button class="button" onclick="select('2013')">
         2013
     </button>
+
+    <p class="year" id="currentYear">
+        Current: 2008
+    </p>
 </div>
+
+
 
 
 <script>
 
     // set the dimensions and margins of the graph
-    var margin = {top: 30, right: 40, bottom: 150, left: 80},
+    var margin = {top: 30, right: 40, bottom: 200, left: 80},
         width = 1000 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom;
+        height = 650 - margin.top - margin.bottom;
 
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -86,9 +125,45 @@
         .range([height, 0]);
 
 
+    // axis labels
+    svg.append('text')
+        .attr('class', 'label')
+        .attr('x', width /2- margin.right)
+        .attr('y', height+margin.bottom)
+        .attr('text-anchor', 'middle')
+        .text('VS')
+        .attr("fill", "black")
+        .attr("font-size", "20px")
+
+    svg.append('text')
+        .attr('class', 'label')
+        .attr('x', width /2-225- margin.right)
+        .attr('y', height+margin.bottom)
+        .attr('text-anchor', 'right')
+        .text('HOME GAMES')
+        .attr("fill", "seagreen");
+
+    svg.append('text')
+        .attr('class', 'label')
+        .attr('x', width /2+50 - margin.right)
+        .attr('y', height+margin.bottom)
+        .attr('text-anchor', 'left')
+        .text('AWAY GAMES')
+        .attr("fill", "blue");
+
+    svg.append('text')
+        .attr('class', 'label')
+        .attr('x', -(height / 2))
+        .attr('y', -50)
+        .attr('transform', 'rotate(-90)')
+        .attr('text-anchor', 'middle')
+        .text('PERCENT WON')
+        .attr("fill", "black");
+
+
+
+
     var data;
-
-
     // Step 1: Load Data
     d3.csv("data/combined.csv", function (dataRead) {
         data = dataRead;
@@ -101,6 +176,8 @@
 
         // default view is 2008
         var category = "2008";
+        // set current
+        document.getElementById('currentYear').innerHTML = "Current: "+category;
         // filter for year and remove byes
         var filteredData = data.filter(function (d) {
             return (d.Year == category && d.Score1 != 0);
@@ -158,6 +235,7 @@
         y.domain([0, 1]);
 
 
+
         // create home wins bars
         svg.selectAll(".barHome")
             .data(homeWins)
@@ -172,9 +250,6 @@
             })
             .attr("height", function (d) {
                 return height - y(d.value.wins / d.value.total);
-            })
-            .attr("fill", function (d) {
-                return "steelblue";
             });
 
         // create away wins bars
@@ -191,10 +266,40 @@
             })
             .attr("height", function (d) {
                 return height - y(d.value.wins / d.value.total);
-            })
-            .attr("fill", function (d) {
-                return "blue";
             });
+
+
+        // draw the grid lines
+        svg.selectAll(".line")
+            .data(homeWins)
+            .enter().append("line")
+            .attr("class", "line")
+            .attr("x1", function (d, i) {
+                return x(d.key) + x.bandwidth()*1.165;
+            })
+            .attr("y1", -5)
+            .attr("x2", function (d, i) {
+            return x(d.key) + x.bandwidth()*1.165;
+            })
+            .attr("y2", height )
+            .attr("stroke", "grey")
+            .attr("stroke-width", 0.25);
+
+        // draw the angle lines
+        svg.selectAll(".angleLine")
+            .data(homeWins)
+            .enter().append("line")
+            .attr("class", "angleLine")
+            .attr("x1", function (d, i) {
+                return x(d.key) + x.bandwidth()*1.165;
+            })
+            .attr("y1", height )
+            .attr("x2", function (d, i) {
+                return x(d.key) + x.bandwidth()*1.165 - 120;
+            })
+            .attr("y2", height + 120 )
+            .attr("stroke", "grey")
+            .attr("stroke-width", 0.4);
 
 
         // add the x Axis
@@ -202,10 +307,11 @@
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom(x))
             .selectAll("text")
-            .attr("font-size", "15px")
+            .attr("font-size", "16px")
             .style("text-anchor", "end")
             .attr("dx", "-.8em")
             .attr("dy", ".15em")
+            .attr("font-family", "Helvetica")
             .attr("transform", "rotate(-45)"); // rotate the text of the x axis
 
         // add the y Axis
@@ -218,6 +324,10 @@
 
     // update the bars with the selected year
     function dataUpdate(category) {
+
+        // set current year text
+        document.getElementById('currentYear').innerHTML = "Current: "+category;
+
         // filter for year and remove byes
         var filteredData = data.filter(function (d) {
             return (d.Year == category && d.Score1 != 0);
@@ -294,9 +404,6 @@
             })
             .attr("height", function (d) {
                 return height - y(d.value.wins / d.value.total);
-            })
-            .attr("fill", function (d) {
-                return "steelblue";
             });
 
         // transition away wins bars
@@ -314,9 +421,6 @@
             })
             .attr("height", function (d) {
                 return height - y(d.value.wins / d.value.total);
-            })
-            .attr("fill", function (d) {
-                return "blue";
             });
 
     } // end of dataUpdate
