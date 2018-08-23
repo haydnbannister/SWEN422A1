@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
-    <style> /* set the CSS */
+    <style>
 
     .button {
-        background-color: steelblue; /* Green */
+        background-color: steelblue;
         border: none;
         color: white;
         padding: 12px 32px;
@@ -24,11 +23,10 @@
 
     .heading{
         margin-left: 80px;
-        font-family: Helvetica;
+        font-family: Arial;
         font-size: 50px;
         font-weight: normal;
         color: gray;
-
     }
 
     </style>
@@ -154,7 +152,7 @@
         SVG.append("text")
             .text(circle.attr("home")+": "+circle.attr("homescore"))
             .attr("id", "open")
-            .style("font-family", "Helvetica Neue")
+            .style("font-family", "Arial")
             .attr("dy", (+y)-85)
             .attr("pointer-events", "none")
             .each(function(){
@@ -164,7 +162,7 @@
         SVG.append("text")
             .text(circle.attr("away")+": "+circle.attr("awayscore"))
             .attr("id", "open")
-            .style("font-family", "Helvetica Neue")
+            .style("font-family", "Arial")
             .attr("dy", (+y)+90)
             .attr("pointer-events", "none")
             .each(function(){
@@ -174,7 +172,7 @@
         SVG.append("text")
             .text(circle.attr("venue"))
             .attr("id", "open")
-            .style("font-family", "Helvetica Neue")
+            .style("font-family", "Arial")
             .attr("pointer-events", "none")
             .attr("dy", (+y)+15)
             .each(function(){
@@ -184,7 +182,7 @@
         SVG.append("text")
             .text(circle.attr("date"))
             .attr("id", "open")
-            .style("font-family", "Helvetica Neue")
+            .style("font-family", "Arial")
             .attr("pointer-events", "none")
             .attr("dy", (+y)-15)
             .each(function(){
@@ -265,7 +263,7 @@
                         .attr("dx", 20)
                         .attr("dy", (ywidth * 75) + 15)
                         .style("font-size", 50)
-                        .style("font-family", "Helvetica Neue")
+                        .style("font-family", "Arial")
                         .style("fill", "gray");
                     ywidth += 4;
                     xwidth = 1;
@@ -357,7 +355,7 @@
                 .attr("dx", 20)
                 .attr("dy", (ywidth * 75) + 15)
                 .style("font-size", 50)
-                .style("font-family", "Helvetica Neue")
+                .style("font-family", "Arial")
                 .style("fill", "gray");
         });
     }
