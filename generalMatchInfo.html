@@ -47,11 +47,15 @@
 
         // get the data
         d3.csv("data/"+category+"-Table1.csv", function (error, data) {
+            sortCountry(data)
+            
             if (error) throw error;
+
+            let teamSuccess
 
             // format the data
             data.forEach(function (d) {
-                d.Score1 = +d.Score1;
+                teamSuccess.add(d.score)
             });
 
             // Scale the range of the data in the domains
@@ -91,11 +95,18 @@
 
     }
 
+    function sortCountry(data){
+        data.forEach(function (d) {
+            if(d.Home){
+
+            }
+        })
+    }
+
     render("2008");
     function select(country) {
         d3.selectAll("g > *").remove()
         render(category);
-
     }
 
 </script>
