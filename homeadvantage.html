@@ -6,19 +6,69 @@
     <title>Bar chart for Tweet Data</title>
     <link rel="stylesheet" href="">
     <script src="http://d3js.org/d3.v4.min.js"></script>
+
+    <style> /* set the CSS */
+
+    .barHome {
+        fill: seagreen;
+    }
+
+    .barAway {
+        fill: blue;
+    }
+
+    .button {
+        background-color: steelblue; /* Green */
+        border: none;
+        color: white;
+        padding: 12px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin-top: 10px;
+    }
+
+    .control-group {
+        margin-left: 80px;
+    }
+
+    </style>
+
+
 </head>
 
 <body>
 <div id="infovizDiv"></div>
 
 
-</svg>
+<div class="control-group">
+    <button class="button" onclick="select('2008')">
+        2008
+    </button>
+    <button class="button" onclick="select('2009')">
+        2009
+    </button>
+    <button class="button" onclick="select('2010')">
+        2010
+    </button>
+    <button class="button" onclick="select('2011')">
+        2011
+    </button>
+    <button class="button" onclick="select('2012')">
+        2012
+    </button>
+    <button class="button" onclick="select('2013')">
+        2013
+    </button>
+</div>
+
 
 <script>
 
     // set the dimensions and margins of the graph
-    var margin = {top: 20, right: 20, bottom: 150, left: 40},
-        width = 800 - margin.left - margin.right,
+    var margin = {top: 30, right: 40, bottom: 150, left: 80},
+        width = 1000 - margin.left - margin.right,
         height = 600 - margin.top - margin.bottom;
 
     var svg = d3.select("body").append("svg")
@@ -29,13 +79,34 @@
             "translate(" + margin.left + "," + margin.top + ")");
 
 
+    var x = d3.scaleBand()
+        .range([0, width])
+        .padding(0.25);
+    var y = d3.scaleLinear()
+        .range([height, 0]);
+
+
+    var data;
+
+
     // Step 1: Load Data
-    d3.csv("data/combined.csv", function (data) {
-        dataViz(data)
+    d3.csv("data/combined.csv", function (dataRead) {
+        data = dataRead;
+        dataCreate();
     });
 
-    function dataViz(incomingData) {
 
+    // create the graph and bars, set the x and y domains
+    function dataCreate() {
+
+        // default view is 2008
+        var category = "2008";
+        // filter for year and remove byes
+        var filteredData = data.filter(function (d) {
+            return (d.Year == category && d.Score1 != 0);
+        });
+
+        // get data with amount of wins and total games as the home team on the selected year
         var homeWins = d3.nest()
             .key(function (d) {
                 return d["Home Team"];
@@ -50,8 +121,9 @@
                     })
                 };
             })
-            .entries(incomingData);
+            .entries(filteredData);
 
+        // get data with amount of wins and total games as the away team on the selected year
         var awayWins = d3.nest()
             .key(function (d) {
                 return d["Away Team"];
@@ -66,9 +138,10 @@
                     })
                 };
             })
-            .entries(incomingData);
+            .entries(filteredData);
 
 
+        // debugging tests
         homeWins.forEach(function (d) {
             console.log(d);
         });
@@ -76,72 +149,48 @@
             console.log(d);
         });
 
-        var x = d3.scaleBand()
-            .range([0, width])
-            .padding(0.25);
-        var y = d3.scaleLinear()
-            .range([height, 0]);
 
-        // Scale the range of the data in the domains
+        // Scale the x range of the data in the domains
         x.domain(homeWins.map(function (d) {
             return d.key;
         }));
-
-        //find max value between the two
-        y.domain([0, Math.max(
-            d3.max(
-                homeWins, function (d) {
-                    return d.value.wins / d.value.total;
-                }),
-            d3.max(
-                awayWins, function (d) {
-                    return d.value.wins / d.value.total;
-                }))]);
+        //find and scale from max y value between the two
+        y.domain([0, 1]);
 
 
-        svg.selectAll(".bar")
+        // create home wins bars
+        svg.selectAll(".barHome")
             .data(homeWins)
             .enter().append("rect")
-            .attr("class", "bar")
+            .attr("class", "barHome")
             .attr("x", function (d, i) {
                 return x(d.key);
             })
             .attr("width", x.bandwidth() / 2)
             .attr("y", function (d) {
-
                 return y(d.value.wins / d.value.total);
-
             })
             .attr("height", function (d) {
-
-
                 return height - y(d.value.wins / d.value.total);
-
-
             })
             .attr("fill", function (d) {
                 return "steelblue";
             });
 
-        svg.selectAll(".bar2")
+        // create away wins bars
+        svg.selectAll(".barAway")
             .data(awayWins)
             .enter().append("rect")
-            .attr("class", "bar2")
+            .attr("class", "barAway")
             .attr("x", function (d, i) {
                 return x(d.key) + x.bandwidth() / 2;
             })
             .attr("width", x.bandwidth() / 2)
             .attr("y", function (d) {
-
                 return y(d.value.wins / d.value.total);
-
             })
             .attr("height", function (d) {
-
-
                 return height - y(d.value.wins / d.value.total);
-
-
             })
             .attr("fill", function (d) {
                 return "blue";
@@ -157,15 +206,129 @@
             .style("text-anchor", "end")
             .attr("dx", "-.8em")
             .attr("dy", ".15em")
-            .attr("transform", "rotate(-45)");
+            .attr("transform", "rotate(-45)"); // rotate the text of the x axis
 
         // add the y Axis
         svg.append("g")
             .attr("class", "axis axis--y")
             .call(d3.axisLeft(y).ticks(10, "%"))
+
+    } // end of dataCreate
+
+
+    // update the bars with the selected year
+    function dataUpdate(category) {
+        // filter for year and remove byes
+        var filteredData = data.filter(function (d) {
+            return (d.Year == category && d.Score1 != 0);
+        });
+
+        // get data with amount of wins and total games as the home team on the selected year
+        var homeWins = d3.nest()
+            .key(function (d) {
+                return d["Home Team"];
+            })
+            .rollup(function (v) {
+                return {
+                    total: v.length,
+                    wins: d3.sum(v, function (d) {
+                        if (d.Score1 > d.Score2) {
+                            return 1;
+                        }
+                    })
+                };
+            })
+            .entries(filteredData);
+
+        // get data with amount of wins and total games as the away team on the selected year
+        var awayWins = d3.nest()
+            .key(function (d) {
+                return d["Away Team"];
+            })
+            .rollup(function (v) {
+                return {
+                    total: v.length,
+                    wins: d3.sum(v, function (d) {
+                        if (d.Score1 > d.Score2) {
+                            return 1;
+                        }
+                    })
+                };
+            })
+            .entries(filteredData);
+
+
+        // debugging tests
+        homeWins.forEach(function (d) {
+            console.log(d);
+        });
+        awayWins.forEach(function (d) {
+            console.log(d);
+        });
+
+
+        //find and scale from max y value between the two
+        y.domain([0, Math.max(
+            d3.max(
+                homeWins, function (d) {
+                    return d.value.wins / d.value.total;
+                }),
+            d3.max(
+                awayWins, function (d) {
+                    return d.value.wins / d.value.total;
+                }))]);
+
+
+        // transition home wins bars
+        svg.selectAll(".barHome")
+            .data(homeWins)
+            .transition()
+            .duration(500)
+            .attr("class", "barHome")
+            .attr("x", function (d, i) {
+                return x(d.key);
+            })
+            .attr("width", x.bandwidth() / 2)
+            .attr("y", function (d) {
+                return y(d.value.wins / d.value.total);
+            })
+            .attr("height", function (d) {
+                return height - y(d.value.wins / d.value.total);
+            })
+            .attr("fill", function (d) {
+                return "steelblue";
+            });
+
+        // transition away wins bars
+        svg.selectAll(".barAway")
+            .data(awayWins)
+            .transition()
+            .duration(500)
+            .attr("class", "barAway")
+            .attr("x", function (d, i) {
+                return x(d.key) + x.bandwidth() / 2;
+            })
+            .attr("width", x.bandwidth() / 2)
+            .attr("y", function (d) {
+                return y(d.value.wins / d.value.total);
+            })
+            .attr("height", function (d) {
+                return height - y(d.value.wins / d.value.total);
+            })
+            .attr("fill", function (d) {
+                return "blue";
+            });
+
+    } // end of dataUpdate
+
+
+    // recieve button year input and update bars
+    function select(category) {
+        dataUpdate(category)
     }
 
-
 </script>
+
+
 </body>
 </html>
