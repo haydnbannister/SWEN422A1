@@ -19,7 +19,7 @@
     // set the dimensions and margins of the graph
     var margin = {top: 20, right: 20, bottom: 150, left: 40},
         width = 800 - margin.left - margin.right,
-        height = 800 - margin.top - margin.bottom;
+        height = 600 - margin.top - margin.bottom;
 
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -78,7 +78,7 @@
 
         var x = d3.scaleBand()
             .range([0, width])
-            .padding(0.1);
+            .padding(0.25);
         var y = d3.scaleLinear()
             .range([height, 0]);
 
@@ -104,9 +104,9 @@
             .enter().append("rect")
             .attr("class", "bar")
             .attr("x", function (d, i) {
-                return x(d.key)+x.bandwidth() / 4;
+                return x(d.key);
             })
-            .attr("width", x.bandwidth() / 4)
+            .attr("width", x.bandwidth() / 2)
             .attr("y", function (d) {
 
                 return y(d.value.wins / d.value.total);
@@ -130,7 +130,7 @@
             .attr("x", function (d, i) {
                 return x(d.key) + x.bandwidth() / 2;
             })
-            .attr("width", x.bandwidth() / 4)
+            .attr("width", x.bandwidth() / 2)
             .attr("y", function (d) {
 
                 return y(d.value.wins / d.value.total);
@@ -161,7 +161,8 @@
 
         // add the y Axis
         svg.append("g")
-            .call(d3.axisLeft(y));
+            .attr("class", "axis axis--y")
+            .call(d3.axisLeft(y).ticks(10, "%"))
     }
 
 
