@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style> /* set the CSS */
+
+    .button {
+        background-color: steelblue; /* Green */
+        border: none;
+        color: white;
+        padding: 12px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin-top: 10px;
+    }
+
+    .control-group {
+        margin-left: 80px;
+    }
+
+    .heading{
+        margin-left: 80px;
+        font-family: Helvetica;
+        font-size: 50px;
+        font-weight: normal;
+        color: gray;
+
+    }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1 class="heading" id="currentYear">
+    ANZ Championship Matches
+</h1>
+
+<div class="control-group">
+    <button class="button" onclick="select('2008')">
+        2008
+    </button>
+    <button class="button" onclick="select('2009')">
+        2009
+    </button>
+    <button class="button" onclick="select('2010')">
+        2010
+    </button>
+    <button class="button" onclick="select('2011')">
+        2011
+    </button>
+    <button class="button" onclick="select('2012')">
+        2012
+    </button>
+    <button class="button" onclick="select('2013')">
+        2013
+    </button>
+</div>
+
+<!-- load the d3.js library -->
+<script src="//d3js.org/d3.v4.min.js"></script>
+
+<div id="viz"></div>
+
+<script type="text/javascript">
+
+    let SVG;
+
+    SVG = d3.select("#viz")
+        .append("svg")
+        .attr("width", 2000)
+        .attr("height", 5250);
+
+    function select(year){
+        d3.selectAll("svg > *").remove();
+        document.getElementById('currentYear').innerHTML = year+" ANZ Championship Matches";
+        newYear(year);
+    }
+
+    function animate() {
+        if(d3.select(this).attr("allowanimate") === "false"){
+            return;
+        }
+        d3.select(this).attr("allowanimate", "false");
+
+        let col = d3.select(this).style("fill");
+        let size = d3.select(this).attr("r");
+
+        let string = "#"+d3.select(this).attr("arcs");
+
+        d3.selectAll(string)
+            .transition()
+            .attr("pointer-events", "none")
+            .style("opacity", 0);
+
+        d3.select(this).transition()
+            .duration(250)
+            .attr("r", 150)
+            .attr("col", col)
+            .attr("ogsize", size)
+            .style("fill", "aliceBlue");
+
+        d3.select(this).on("mouseout", animateOut);
+        text(d3.select(this));
+    }
+
+    function animateOut(){
+        let string = "#"+d3.select(this).attr("arcs");
+
+        d3.select(this)
+            .transition()
+            .delay(900)
+            .attr("r", d3.select(this).attr("ogsize"))
+            .style("fill", d3.select(this).attr("col"));
+
+        d3.selectAll("#open")
+            .transition()
+            .delay(750)
+            .style("opacity", 0)
+            .remove();
+
+        d3.selectAll(string)
+            .transition()
+            .delay(950)
+            .attr("pointer-events", "none")
+            .style("opacity", 1);
+
+        d3.select(this).attr("allowanimate", "true");
+    }
+
+    function whoWon(name){
+        if(name === "Central Pulse" ||
+            name === "Northern Mystics" ||
+            name === "Waikato Bay of Plenty Magic" ||
+            name === "Southern Steel" ||
+            name === "Canterbury Tactix"){
+            return "NZ";
+        }
+        else{
+            return "AUS";
+        }
+    }
+
+    function text(circle){
+        let x = circle.attr("cx");
+        let y = circle.attr("cy");
+        let w = 0;
+
+        SVG.append("text")
+            .text(circle.attr("home")+": "+circle.attr("homescore"))
+            .attr("id", "open")
+            .style("font-family", "Helvetica Neue")
+            .attr("dy", (+y)-85)
+            .attr("pointer-events", "none")
+            .each(function(){
+                w = this.getComputedTextLength(); return w;
+            })
+            .attr("dx", (+x) - (w/2));
+        SVG.append("text")
+            .text(circle.attr("away")+": "+circle.attr("awayscore"))
+            .attr("id", "open")
+            .style("font-family", "Helvetica Neue")
+            .attr("dy", (+y)+90)
+            .attr("pointer-events", "none")
+            .each(function(){
+                w = this.getComputedTextLength(); return w;
+            })
+            .attr("dx", (+x) - (w/2));
+        SVG.append("text")
+            .text(circle.attr("venue"))
+            .attr("id", "open")
+            .style("font-family", "Helvetica Neue")
+            .attr("pointer-events", "none")
+            .attr("dy", (+y)+15)
+            .each(function(){
+                w = this.getComputedTextLength(); return w;
+            })
+            .attr("dx", (+x) - (w/2));
+        SVG.append("text")
+            .text(circle.attr("date"))
+            .attr("id", "open")
+            .style("font-family", "Helvetica Neue")
+            .attr("pointer-events", "none")
+            .attr("dy", (+y)-15)
+            .each(function(){
+                w = this.getComputedTextLength(); return w;
+            })
+            .attr("dx", (+x) - (w/2));
+    }
+
+    function findColour(name){
+        if(name === "Central Pulse"){
+            return("#3366cc");
+        }
+        if(name === "Northern Mystics"){
+            return("#dc3912");
+        }
+        if(name === "Waikato Bay of Plenty Magic"){
+            return("#ff9900");
+        }
+        if(name === "Southern Steel"){
+            return("#0099c6");
+        }
+        if(name === "Canterbury Tactix"){
+            return("#B7A76A");
+        }
+        if(name === "New South Wales Swifts"){
+            return("#66aa00");
+        }
+        if(name === "Adelaide Thunderbirds"){
+            return("#B70013");
+        }
+        if(name === "Melbourne Vixens"){
+            return("#316395");
+        }
+        if(name === "West Coast Fever"){
+            return("#990099");
+        }
+        if(name === "Queensland Firebirds"){
+            return("#3b9eac");
+        }
+        else return("#6633cc")
+    }
+
+    function newYear(year) {
+        d3.csv("data/"+year+"-Table1.csv", function (error, data) {
+            let xwidth = 1;
+            let ywidth = 3; //Where the first circles are drawn
+
+            if (error) throw error;
+
+            let allPoint = 0;
+            let max = 0;
+
+            data.forEach(function (d) {
+                d.Score1 = +d.Score1;
+                d.Score2 = +d.Score2;
+                d.Round = +d.Round;
+                allPoint = d.Score1 + d.Score2;
+                if (allPoint > max) {
+                    max = allPoint;
+                }
+            });
+
+            let arcIndex = 0;
+            let prevRound = 1;
+
+            data.forEach(function (d) {
+                if (d.Round !== prevRound) {
+                    SVG.append("line")
+                        .attr("x1", 75)
+                        .attr("x2", 1300)
+                        .attr("y1", (ywidth * 75) + 150)
+                        .attr("y2", (ywidth * 75) + 150)
+                        .style("strokeWidth", "20px")
+                        .style("stroke", "#000");
+
+                    SVG.append("text")
+                        .text(prevRound)
+                        .attr("dx", 20)
+                        .attr("dy", (ywidth * 75) + 15)
+                        .style("font-size", 50)
+                        .style("font-family", "Helvetica Neue")
+                        .style("fill", "gray");
+                    ywidth += 4;
+                    xwidth = 1;
+                    prevRound = d.Round;
+                }
+
+                let col = "white";
+                if (whoWon(d["Home Team"]) === "NZ" && (d.Score1 > d.Score2)) {
+                    col = "silver";
+                }
+                else if (whoWon(d["Away Team"]) === "NZ" && (d.Score2 > d.Score1)) {
+                    col = "silver";
+                }
+                else if (whoWon(d["Home Team"]) === "AUS" && (d.Score1 > d.Score2)) {
+                    col = "gold";
+                }
+                else if (whoWon(d["Away Team"]) === "AUS" && (d.Score2 > d.Score1)) {
+                    col = "gold";
+                }
+
+                let total = (d.Score1) + (d.Score2);
+                let linearScale = d3.scaleLinear()
+                    .domain([0, total])
+                    .range([0, 360]);
+                let bubbleSize = d3.scaleLinear()
+                    .domain([0, max])
+                    .range([0, 100]);
+                let bubSize = bubbleSize(total);
+                let rad = (bubSize);
+                let xshift = 240;
+
+                SVG.append("circle")
+                    .style("stroke", "gray")
+                    .style("fill", col)
+                    .attr("r", rad)
+                    .attr("allowanimate", "true")
+                    .attr("homescore", d.Score1)
+                    .attr("awayscore", d.Score2)
+                    .attr("venue", d.Venue)
+                    .attr("date", d.Date)
+                    .attr("cx", xwidth * xshift)
+                    .attr("cy", ywidth * 75)
+                    .attr("arcs", "arc" + arcIndex)
+                    .attr("home", d["Home Team"])
+                    .attr("away", d["Away Team"])
+                    .on("mousedown", animate);
+
+                let arc = d3.arc()
+                    .innerRadius(rad - 30)
+                    .outerRadius(rad)
+                    .startAngle(270 * (Math.PI / 180))
+                    .endAngle((270 + linearScale(d.Score1)) * (Math.PI / 180));
+
+                SVG
+                    .append("path")
+                    .attr("id", "arc" + arcIndex)
+                    .attr("d", arc)
+                    .attr("fill", findColour(d["Home Team"]))
+                    .attr("transform", "translate(" + xwidth * xshift + "," + ywidth * 75 + ")");
+
+                let arc2 = d3.arc()
+                    .innerRadius(rad - 30)
+                    .outerRadius(rad)
+                    .startAngle((270 + linearScale(d.Score1)) * (Math.PI / 180))
+                    .endAngle((270 + linearScale(d.Score1) + linearScale(d.Score2)) * (Math.PI / 180));
+
+                SVG
+                    .append("path")
+                    .attr("id", "arc" + arcIndex)
+                    .attr("d", arc2)
+                    .attr("fill", findColour(d["Away Team"]))
+                    .attr("transform", "translate(" + xwidth * xshift + "," + ywidth * 75 + ")");
+
+                arcIndex++;
+                xwidth++;
+            });
+
+            //Add the final line and round number
+            SVG.append("line")
+                .attr("x1", 75)
+                .attr("x2", 1250)
+                .attr("y1", (ywidth * 75) + 150)
+                .attr("y2", (ywidth * 75) + 150)
+                .style("strokeWidth", "20px")
+                .style("stroke", "#000");
+
+            SVG.append("text")
+                .text(prevRound)
+                .attr("dx", 20)
+                .attr("dy", (ywidth * 75) + 15)
+                .style("font-size", 50)
+                .style("font-family", "Helvetica Neue")
+                .style("fill", "gray");
+        });
+    }
+    select("2008");
+
+</script>
+</body>
+</html>
