@@ -23,7 +23,7 @@
 
     .heading{
         margin-left: 80px;
-        font-family: Arial;
+        font-family: Arial,serif;
         font-size: 50px;
         font-weight: normal;
         color: gray;
@@ -67,19 +67,28 @@
 
 <script type="text/javascript">
 
+    //Create main svg that holds data bubbles
     let SVG;
 
+    //Allow for fade in by starting with opacity of 0
     SVG = d3.select("#viz")
         .append("svg")
         .attr("width", 2000)
-        .attr("height", 5250);
+        .attr("height", 5500)
+        .attr("opacity", 0);
 
+    //Year changer resets the SVG and calls the newYear function to rebuild it with new data
     function select(year){
+        SVG.attr("opacity", 0);
         d3.selectAll("svg > *").remove();
         document.getElementById('currentYear').innerHTML = year+" ANZ Championship Matches";
         newYear(year);
+        SVG.transition()
+            .duration(300)
+            .attr("opacity", 1);
     }
 
+    //When a circle is clicked its made bigger and text is displayed on it
     function animate() {
         if(d3.select(this).attr("allowanimate") === "false"){
             return;
@@ -107,16 +116,17 @@
         text(d3.select(this));
     }
 
+    //When mouse moves out of circle it returns to normal
     function animateOut(){
         let string = "#"+d3.select(this).attr("arcs");
 
-        d3.select(this)
+        d3.select(this) //Transition circle back to normal
             .transition()
             .delay(900)
             .attr("r", d3.select(this).attr("ogsize"))
             .style("fill", d3.select(this).attr("col"));
 
-        d3.selectAll("#open")
+        d3.selectAll("#open") //Find all text data and delete it
             .transition()
             .delay(750)
             .style("opacity", 0)
@@ -131,6 +141,7 @@
         d3.select(this).attr("allowanimate", "true");
     }
 
+    //Find if it was an australian or new zealand team that won
     function whoWon(name){
         if(name === "Central Pulse" ||
             name === "Northern Mystics" ||
@@ -144,6 +155,7 @@
         }
     }
 
+    //Generates the text data for a match when a circle is clicked
     function text(circle){
         let x = circle.attr("cx");
         let y = circle.attr("cy");
@@ -191,6 +203,7 @@
             .attr("dx", (+x) - (w/2));
     }
 
+    //Returns a teams colour
     function findColour(name){
         if(name === "Central Pulse"){
             return("#3366cc");
@@ -225,10 +238,135 @@
         else return("#6633cc")
     }
 
+    //Generates the key at the top of the page
+    function keyGen(){
+        let rad = 60;
+        let x = 350;
+        let y = 190;
+
+        SVG.append("text")
+            .text("Round")
+            .attr("dx", - 560)
+            .attr("dy", 50)
+            .style("text-anchor", "end")
+            .style("font-size", 40)
+            .style("font-family", "Arial")
+            .style("fill", "lightGray")
+            .attr("transform", "rotate(-90)" );
+
+        SVG.append("circle")
+            .style("fill", "white")
+            .style("stroke", "lightGray")
+            .attr("r", rad+90)
+            .attr("cx", x)
+            .attr("cy", y);
+        SVG.append("line")
+            .attr("x1", x + 100)
+            .attr("x2", x + 250)
+            .attr("y1", y - 55)
+            .attr("y2", y - 55)
+            .style("strokeWidth", "20px")
+            .style("stroke", "gray");
+        SVG.append("text")
+            .text("Circle size shows relative total goals per match, click there for more info")
+            .attr("dx", x + 260)
+            .attr("dy", y - 50)
+            .style("font-size", 20)
+            .style("font-family", "Arial")
+            .style("fill", "gray");
+
+        SVG.append("circle")
+            .style("stroke", "white")
+            .style("fill", "silver")
+            .attr("r", rad)
+            .attr("cx", x)
+            .attr("cy", y);
+
+        let arc = d3.arc()
+            .innerRadius(rad + 30)
+            .outerRadius(rad + 60)
+            .startAngle(75 * (Math.PI / 180))
+            .endAngle((250 * (Math.PI / 180)));
+
+        SVG
+            .append("path")
+            .attr("d", arc)
+            .attr("fill", "lightBlue")
+            .attr("transform", "translate(" + x + "," + y + ")");
+
+        let arc2 = d3.arc()
+            .innerRadius(rad + 30)
+            .outerRadius(rad + 60)
+            .startAngle(270 * (Math.PI / 180))
+            .endAngle(415 * (Math.PI / 180));
+
+        SVG
+            .append("path")
+            .attr("d", arc2)
+            .attr("fill", "#ff5f00")
+            .attr("transform", "translate(" + x + "," + y + ")");
+
+        SVG.append("line")
+            .attr("x1", x + 30)
+            .attr("x2", x + 280)
+            .attr("y1", y + 22)
+            .attr("y2", y + 22)
+            .style("strokeWidth", "20px")
+            .style("stroke", "gray");
+        SVG.append("text")
+            .text("Australian Win")
+            .attr("dx", x + 290)
+            .attr("dy", y + 30)
+            .style("font-size", 25)
+            .style("font-family", "Arial")
+            .style("fill", "gold");
+        SVG.append("text")
+            .text("/ New Zealand Win")
+            .attr("dx", x + 460)
+            .attr("dy", y + 30)
+            .style("font-size", 25)
+            .style("font-family", "Arial")
+            .style("fill", "silver");
+
+        SVG.append("line")
+            .attr("x1", x)
+            .attr("x2", x + 250)
+            .attr("y1", y - 105)
+            .attr("y2", y - 105)
+            .style("strokeWidth", "20px")
+            .style("stroke", "gray");
+        SVG.append("text")
+            .text("Home Team Colour and Relative Score")
+            .attr("dx", x + 260)
+            .attr("dy", y - 100)
+            .style("font-size", 20)
+            .style("font-family", "Arial")
+            .style("fill", "gray");
+
+        SVG.append("line")
+            .attr("x1", x)
+            .attr("x2", x + 250)
+            .attr("y1", y + 105)
+            .attr("y2", y + 105)
+            .style("strokeWidth", "20px")
+            .style("stroke", "gray");
+        SVG.append("text")
+            .text("Away Team Colour and Relative Score")
+            .attr("dx", x + 260)
+            .attr("dy", y + 110)
+            .style("font-size", 20)
+            .style("font-family", "Arial")
+            .style("fill", "gray");
+
+    }
+
+    //Main function that generates the circles for the page
     function newYear(year) {
         d3.csv("data/"+year+"-Table1.csv", function (error, data) {
+            keyGen();
+
             let xwidth = 1;
-            let ywidth = 3; //Where the first circles are drawn
+            let ywidth = 6.25; //Where the first circles are drawn
 
             if (error) throw error;
 
@@ -248,7 +386,10 @@
             let arcIndex = 0;
             let prevRound = 1;
 
+            //For each instance in the years data
             data.forEach(function (d) {
+
+                //Generates the round split
                 if (d.Round !== prevRound) {
                     SVG.append("line")
                         .attr("x1", 75)
@@ -256,7 +397,7 @@
                         .attr("y1", (ywidth * 75) + 150)
                         .attr("y2", (ywidth * 75) + 150)
                         .style("strokeWidth", "20px")
-                        .style("stroke", "#000");
+                        .style("stroke", "gray");
 
                     SVG.append("text")
                         .text(prevRound)
@@ -284,6 +425,7 @@
                     col = "gold";
                 }
 
+                //Calculate the scale ranges for the scores
                 let total = (d.Score1) + (d.Score2);
                 let linearScale = d3.scaleLinear()
                     .domain([0, total])
@@ -295,6 +437,7 @@
                 let rad = (bubSize);
                 let xshift = 240;
 
+                //Here the main circle is created and contains most of the match data
                 SVG.append("circle")
                     .style("stroke", "gray")
                     .style("fill", col)
@@ -311,32 +454,29 @@
                     .attr("away", d["Away Team"])
                     .on("mousedown", animate);
 
+                //The teams arcs are generated
                 let arc = d3.arc()
                     .innerRadius(rad - 30)
                     .outerRadius(rad)
                     .startAngle(270 * (Math.PI / 180))
                     .endAngle((270 + linearScale(d.Score1)) * (Math.PI / 180));
-
                 SVG
                     .append("path")
                     .attr("id", "arc" + arcIndex)
                     .attr("d", arc)
                     .attr("fill", findColour(d["Home Team"]))
                     .attr("transform", "translate(" + xwidth * xshift + "," + ywidth * 75 + ")");
-
                 let arc2 = d3.arc()
                     .innerRadius(rad - 30)
                     .outerRadius(rad)
                     .startAngle((270 + linearScale(d.Score1)) * (Math.PI / 180))
                     .endAngle((270 + linearScale(d.Score1) + linearScale(d.Score2)) * (Math.PI / 180));
-
                 SVG
                     .append("path")
                     .attr("id", "arc" + arcIndex)
                     .attr("d", arc2)
                     .attr("fill", findColour(d["Away Team"]))
                     .attr("transform", "translate(" + xwidth * xshift + "," + ywidth * 75 + ")");
-
                 arcIndex++;
                 xwidth++;
             });
@@ -359,6 +499,8 @@
                 .style("fill", "gray");
         });
     }
+
+    //2008 data is shown as the default
     select("2008");
 
 </script>
